@@ -82,7 +82,7 @@ def find_code_files(path):
     for dirpath, _, files in os.walk(path):
         dbg("Entering: %s" % dirpath)
         for filename in files:
-            if filename.endswith(".m") or filename.endswith(".lua"):
+            if filename.endswith(".m") or filename.endswith(".lua") or filename.endswith(".fnl"):
                 dbg("  Found file: %s/%s" % (dirpath, filename))
                 code_files.append("%s/%s" % (dirpath, filename))
     return code_files
@@ -98,10 +98,10 @@ def extract_docstrings(filename):
         for raw_line in filedata.readlines():
             i += 1
             line = raw_line.strip('\n')
-            if line.startswith("----") or line.startswith("////"):
+            if line.startswith("----") or line.startswith("////") or line.startswith(";;;;"):
                 dbg("Skipping %s:%d - too many comment chars" % (filename, i))
                 continue
-            if line.startswith("---") or line.startswith("///"):
+            if line.startswith("---") or line.startswith("///") or line.startswith(";;;"):
                 # We're in a chunk of docstrings
                 if not is_in_chunk:
                     # This is a new chunk
@@ -111,7 +111,7 @@ def extract_docstrings(filename):
                     chunk.append(filename)
                     chunk.append("%d" % i)
                 # Append the line to the current chunk
-                line = line.strip("/-")
+                line = line.strip("/-;")
                 if len(line) > 0 and line[0] == ' ':
                     line = line[1:]
                 chunk.append(line)
@@ -520,7 +520,7 @@ def do_processing(directories):
     for directory in directories:
         codefiles += find_code_files(directory)
     if len(codefiles) == 0:
-        err("No .m/.lua files found")
+        err("No .m/.lua/.fnl files found")
 
     for filename in codefiles:
         raw_docstrings += extract_docstrings(filename)
